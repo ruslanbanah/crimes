@@ -13,7 +13,7 @@ object start {
   }
 
   def CSVSource(source: Source): List[List[String]] = {
-    val rows = source.getLines().toList.drop(1).map(_.split(",").zipWithIndex.filter { case (v, index) => (List(0, 4, 5, 9) contains index) && v.nonEmpty }.drop(1).map(_._1).map(_.trim).toList)
+    val rows = source.getLines().toList.drop(1).map(getColls)
     rows.filter(_.length == 3)
   }
 
