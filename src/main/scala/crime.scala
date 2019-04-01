@@ -1,28 +1,42 @@
 import scala.io.Source
 import java.io.File
 
-def getListOfFiles(dir: String):List[File] = new File(dir).listFiles.filter(_.isFile).toList.filter(_.getName.endsWith("csv"))
+object start {
+  def main(args: Array[String]): Unit = {
+    def getListOfFiles(dir: String): List[File] = {
+      val listFiles = new File(dir).listFiles
+      val res = listFiles.filter(_.isFile).toList.filter(_.getName.endsWith("csv"))
+      res
+    }
 
-def CSVSource(source:Source, delimiter:String = ","): List[List[String]] = {
-  val MasterList = source.getLines().toList map {_.split("""\""" + delimiter).toList}
-  MasterList.filter(_.head.nonEmpty)
-}
+    def getColls(row: String): List[String] = {
+      row.split(",").zipWithIndex.filter { case (v, index) => (List(0, 4, 5, 9) contains index) && v.nonEmpty }.drop(1).map(_._1).map(_.trim).toList
+    }
 
-def readAllFiles(absPath: String): List[List[String]] = {
-  var result = List[List[String]]()
-  var files = getListOfFiles(absPath)
-  for ((file) <- files) {
-    print(file.getPath())
-    val source = Source.fromFile(file.getPath())
-    result = result ::: CSVSource(source)
-    source.close()
-    println(" ... Complete.")
+    def CSVSource(source: Source): List[List[String]] = {
+      val rows = source.getLines().toList.drop(1).map(_.split(",").zipWithIndex.filter { case (v, index) => (List(0, 4, 5, 9) contains index) && v.nonEmpty }.drop(1).map(_._1).map(_.trim).toList)
+      rows.filter(_.length == 3)
+    }
+
+    def top(events: List[List[String]], num: Int): Seq[(String, List[scala.List[String]])] = {
+      events.groupBy(_.slice(0,2).mkString(",")).toSeq.sortBy(_._2.size).reverse.slice(0,num)
+    }
+
+    def readAllFiles(absPath: String): List[List[String]] = {
+      var result = List[List[String]]()
+      val files = getListOfFiles(absPath)
+      for (file <- files) {
+        print("Load: ", file.getPath)
+        val source = Source.fromFile(file.getPath)
+        result = result ::: CSVSource(source)
+        source.close()
+        println(" ... Complete.")
+      }
+      result
+    }
+    val events = readAllFiles("/Users/ruslanbanah/work/tmp/scala_crimes/src/main/scala/crimes")
+    println("Events count: ", events.length)
+    val topFive = top(events, 5)
+    println(topFive)
   }
-  result
 }
-
-var res = readAllFiles("crimes/")
-println(res.length)
-
-var grouped = res.groupBy(_.slice(4,6).mkString(","))
-println(res.length)
