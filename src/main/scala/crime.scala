@@ -39,7 +39,10 @@ object start {
     result
   }
   def main(args: Array[String]): Unit = {
-    val events = readAllFiles("/Users/ruslanbanah/work/tmp/scala_crimes/src/main/scala/crimes")
+    val defaultPath = System.getProperty("user.dir") + "/src/main/scala/crimes"
+    val path = if(args.headOption.nonEmpty) args(0) else defaultPath
+    println("Path : " + path)
+    val events = readAllFiles(path)
     println("Events count: ", events.length)
     val results = top(events, 5)
     results.foreach(row => {
