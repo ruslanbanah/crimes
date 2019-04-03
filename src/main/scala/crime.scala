@@ -18,7 +18,7 @@ object start {
       new File(dir).listFiles.filter(_.isFile).toList.filter(_.getName.endsWith("csv")).map(_.getAbsolutePath)
     }
     def topN(n: Int): Seq[((String, String), Seq[start.Crime])] = {
-      readAllCSVFiles().groupBy(row => (row.long, row.lat)).toSeq.sortBy(-_._2.size).slice(0, n)
+      readAllCSVFiles().groupBy(row => (row.long, row.lat)).toSeq.sortBy(-_._2.size).take(n)
     }
   }
 
