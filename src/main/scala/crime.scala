@@ -2,28 +2,22 @@ import scala.io.Source
 import java.io.File
 
 object start {
-  trait CrimesReader {
-    def readCrimes(fileName: String): Seq[Crime]
-    def readAllCSVFiles(): Seq[Crime]
-    def getListOfFiles(): List[String]
-    def topN(n: Int): Seq[((String, String), Seq[start.Crime])]
-  }
   case class Crime(long: String, lat: String, crimeType: String)
 
-  class CrimeCSVReader(val dir: String) extends CrimesReader {
-    override def readCrimes(fileName: String): Seq[Crime] = {
+  class CrimeCSVReader(val dir: String) {
+    def readCrimes(fileName: String): Seq[Crime] = {
       for {
         line <- Source.fromFile(fileName).getLines().drop(1).toVector
         values = line.split(",").map(_.trim) if values(0).nonEmpty && values(4).nonEmpty && values(5).nonEmpty
       } yield Crime(values(4), values(5), values(9))
     }
-    override def readAllCSVFiles(): Seq[Crime] = {
+    def readAllCSVFiles(): Seq[Crime] = {
       getListOfFiles().flatten(readCrimes).toVector
     }
-    override def getListOfFiles(): List[String] = {
+    def getListOfFiles(): List[String] = {
       new File(dir).listFiles.filter(_.isFile).toList.filter(_.getName.endsWith("csv")).map(_.getAbsolutePath)
     }
-    override def topN(n: Int): Seq[((String, String), Seq[start.Crime])] = {
+    def topN(n: Int): Seq[((String, String), Seq[start.Crime])] = {
       readAllCSVFiles().groupBy(row => (row.long, row.lat)).toSeq.sortBy(-_._2.size).slice(0, n)
     }
   }
